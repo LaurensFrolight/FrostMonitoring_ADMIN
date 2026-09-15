@@ -384,6 +384,16 @@
 </head>
 <body>
 
+<div id="auth-gate" style="position:fixed; inset:0; z-index:9999; background:linear-gradient(160deg, #142719 0%, #326345 100%); display:flex; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#fff; border-radius:18px; padding:36px 32px; max-width:360px; width:100%; text-align:center;">
+    <div style="font-family:'Abril Fatface', serif; font-size:24px; color:#142719; margin-bottom:6px;">Frolight Admin</div>
+    <div style="font-size:13px; color:#6b6b64; margin-bottom:20px;">Internal access only. Enter the admin password to continue.</div>
+    <input type="password" id="auth-password" placeholder="Password" style="width:100%; padding:10px 12px; border:1px solid #e0dccf; border-radius:8px; font-size:14px; margin-bottom:10px;" onkeydown="if(event.key==='Enter') checkAuth()">
+    <div id="auth-error" style="font-size:12px; color:#a3390f; margin-bottom:10px; min-height:16px;"></div>
+    <button onclick="checkAuth()" style="width:100%; background:#142719; color:#fff; border:none; padding:12px; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer;">Enter</button>
+  </div>
+</div>
+
 <div class="hero">
   <div class="hero-inner">
     <div class="eyebrow-row" style="margin-bottom: 8px;">
@@ -557,6 +567,21 @@
 
 <script>
 const ENDPOINT = 'https://script.google.com/macros/s/AKfycbxkgD0nH7MDWcjCpjXsRy_Ek86ipclqi_65fS5iiIabBUB0VK8L63hYv0O2ym0zrpKkzg/exec';
+
+// Must exactly match CONFIG.ADMIN_SECRET in the Apps Script backend — this
+// is what authorizes add/delete-site requests. Change this to your own
+// value (and update it in the backend too) before sharing this dashboard.
+const ADMIN_SECRET = 'Fr0l1ght';
+
+function checkAuth() {
+  const input = document.getElementById('auth-password').value;
+  const errorEl = document.getElementById('auth-error');
+  if (input === ADMIN_SECRET) {
+    document.getElementById('auth-gate').style.display = 'none';
+  } else {
+    errorEl.textContent = 'Incorrect password.';
+  }
+}
 
 const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 let currentSiteId = null;
@@ -924,7 +949,7 @@ async function confirmDeleteSite(siteId, siteName) {
     const res = await fetch(ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'deleteSite', siteId })
+      body: JSON.stringify({ action: 'deleteSite', siteId, secret: ADMIN_SECRET })
     });
     const data = await res.json();
     if (data.error) throw new Error(data.error);
@@ -1156,7 +1181,7 @@ async function submitNewSite() {
     const res = await fetch(ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'addSite', name, lat, lon, email })
+      body: JSON.stringify({ action: 'addSite', name, lat, lon, email, secret: ADMIN_SECRET })
     });
     const data = await res.json();
     if (data.error) throw new Error(data.error);
