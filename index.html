@@ -813,9 +813,16 @@ function renderForecast(forecast) {
     el.innerHTML = '<div class="empty-state">No forecast data yet. Run the daily check in Apps Script first.</div>';
     return;
   }
+  // Safety net: keep only one entry per date, even if the sheet contains
+  // duplicate rows (e.g. from repeated testing runs) — prevents a bloated
+  // payload and duplicate day-cards from ever reaching the render step.
+  const byDate = {};
+  forecast.forEach(d => { byDate[d.date] = d; });
+  const dedupedForecast = Object.values(byDate).sort((a, b) => a.date.localeCompare(b.date));
+
   const today = new Date(); today.setHours(0,0,0,0);
-  const upcoming = forecast.filter(d => new Date(d.date + 'T00:00:00') >= today).slice(0, 7);
-  const toShow = upcoming.length > 0 ? upcoming : forecast.slice(-7);
+  const upcoming = dedupedForecast.filter(d => new Date(d.date + 'T00:00:00') >= today).slice(0, 7);
+  const toShow = upcoming.length > 0 ? upcoming : dedupedForecast.slice(-7);
   lastForecast = toShow;
 
   el.innerHTML = toShow.map((d, idx) => {
