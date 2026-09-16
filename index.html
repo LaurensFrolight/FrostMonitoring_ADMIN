@@ -1252,7 +1252,7 @@ async function loadSiteData(siteId) {
 
     document.getElementById('location-name').textContent = data.site.name;
     document.getElementById('location-meta').textContent =
-      `${Number(data.site.lat).toFixed(4)}, ${Number(data.site.lon).toFixed(4)} · Last updated ${new Date(data.generatedAt).toLocaleString('en-US')}`;
+      `${Number(data.site.lat).toFixed(4)}, ${Number(data.site.lon).toFixed(4)} · Last updated ${new Date(data.generatedAt).toLocaleString('en-US', { timeZoneName: 'short' })} (your local time)`;
     currentSiteUses12h = !!data.site.uses12h;
 
     updateMap(data.site.lat, data.site.lon, data.site.name);
