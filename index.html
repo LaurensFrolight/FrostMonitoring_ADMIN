@@ -586,6 +586,7 @@ function checkAuth() {
 const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 let currentSiteId = null;
 let currentSiteUses12h = false;
+let currentSiteTimezone = '';
 let currentUnit = 'C';
 let lastForecastFull = [];
 let lastEventsFull = [];
@@ -872,7 +873,7 @@ function openDayModal(idx) {
   if (confirmedRisk && (d.frostStart || d.frostDeepest || d.frostEnd)) {
     timingEl.style.display = '';
     timingEl.innerHTML = `
-      <div class="timing-title">Frost event timing (local time)</div>
+      <div class="timing-title">Frost event timing (${currentSiteTimezone || 'local time'})</div>
       <div class="timing-step"><div class="fig-label">Onset</div><div class="fig-value">${frostTimeLabel(d.date, d.frostStart) || '—'}</div></div>
       <div class="timing-arrow">→</div>
       <div class="timing-step"><div class="fig-label">Deepest</div><div class="fig-value">${frostTimeLabel(d.date, d.frostDeepest) || '—'}</div></div>
@@ -1010,7 +1011,7 @@ function renderEvents(events) {
         </div>
         ${(ev.frostStart || ev.frostDeepest || ev.frostEnd) ? `
         <div class="timing-row">
-          <div class="timing-title">Frost event timing (local time)</div>
+          <div class="timing-title">Frost event timing (${currentSiteTimezone || 'local time'})</div>
           <div class="timing-step"><div class="fig-label">Onset</div><div class="fig-value">${frostTimeLabel(ev.date, ev.frostStart) || '—'}</div></div>
           <div class="timing-arrow">→</div>
           <div class="timing-step"><div class="fig-label">Deepest</div><div class="fig-value">${frostTimeLabel(ev.date, ev.frostDeepest) || '—'}</div></div>
@@ -1018,7 +1019,7 @@ function renderEvents(events) {
           <div class="timing-step"><div class="fig-label">Ends</div><div class="fig-value">${frostTimeLabel(ev.date, ev.frostEnd) || 'Ongoing at window edge'}</div></div>
         </div>` : `
         <div class="timing-row">
-          <div class="timing-title">Frost event timing (local time)</div>
+          <div class="timing-title">Frost event timing (${currentSiteTimezone || 'local time'})</div>
           <div style="font-size:12px; color:#a3a196; flex-basis:100%; text-align:center;">Timing not available for this event — it occurred before timing tracking was added, or has since aged out of the forecast window.</div>
         </div>`}
         <div class="event-figures">
@@ -1254,6 +1255,7 @@ async function loadSiteData(siteId) {
     document.getElementById('location-meta').textContent =
       `${Number(data.site.lat).toFixed(4)}, ${Number(data.site.lon).toFixed(4)} · Last updated ${new Date(data.generatedAt).toLocaleString('en-US', { timeZoneName: 'short' })} (your local time)`;
     currentSiteUses12h = !!data.site.uses12h;
+    currentSiteTimezone = data.site.timezone || '';
 
     updateMap(data.site.lat, data.site.lon, data.site.name);
 
